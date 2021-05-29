@@ -1,3 +1,5 @@
+# Dockerfile for Express server
+
 FROM node:latest
 WORKDIR /app
 COPY . .

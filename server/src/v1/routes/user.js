@@ -19,15 +19,15 @@ const auth = require("../middleware/auth");
  *         email:
  *           type: string
  *           description: The user's email.
- *           example: me@belkacember.com
+ *           example: me@bouchra-yousra.com
  *         firstName:
  *           type: string
  *           description: The user's first name.
- *           example: Belkacem
+ *           example: Yousra
  *         lastName:
  *           type: string
  *           description: the user's last name.
- *           example : Berras
+ *           example : Afoun
  *         password:
  *           type: string
  *           description: the user's password.
@@ -38,7 +38,7 @@ const auth = require("../middleware/auth");
  *         email:
  *           type: string
  *           description: The user's email.
- *           example: me@belkacember.com
+ *           example: me@bouchra-yousra.com
  *         password:
  *           type: string
  *           description: the user's password.
@@ -70,19 +70,19 @@ const auth = require("../middleware/auth");
  *                   email:
  *                     type: string
  *                     description: The user's email.
- *                     example: me@belkacember.com
+ *                     example: me@bouchra-yousra.com
  *                   firstName:
  *                     type: string
  *                     description: The user's first name.
- *                     example: Belkacem
+ *                     example: Yousra
  *                   lastName:
  *                     type: string
  *                     description: the user's last name.
- *                     example : Berras
+ *                     example : Afoun
  *                   username:
  *                     type: string
  *                     description: the user's username.
- *                     example: kacemws
+ *                     example: bouchra-yousra
  *   /v1/user/signup/:
  *     post:
  *       summary: Signup a user in the system.
@@ -160,8 +160,12 @@ const auth = require("../middleware/auth");
 router.get("/", auth, async (req, res) => {
   try {
     const owner = req.user.id;
-    const { email, firstName, lastName, username } =
-      await userModule.findUserById(owner);
+    const {
+      email,
+      firstName,
+      lastName,
+      username,
+    } = await userModule.findUserById(owner);
     res.status(200).json({
       email,
       firstName,
@@ -196,9 +200,11 @@ router.post("/signup", async (req, res) => {
         body: error.details[0].message,
       };
     }
-
+    console.log("before finding");
     // checking to see if a user with the same email exists
     const data = req.body;
+
+    console.log("finding nemo");
 
     let user = await userModule.find(data.email);
 
@@ -264,7 +270,6 @@ router.post("/login", async (req, res) => {
 
     // checking that the user exists, and if the same password was provided
     const { email, password } = req.body;
-
     let user = await userModule.find(email);
     if (!user) {
       throw {

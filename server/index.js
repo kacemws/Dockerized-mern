@@ -14,6 +14,9 @@ var path = require("path");
 
 // ROUTES
 const user = require("./src/v1/routes/user");
+const task = require("./src/v1/routes/task");
+const category = require("./src/v1/routes/category");
+const space = require("./src/v1/routes/space");
 
 //Swagger
 const swaggerJSDoc = require("swagger-jsdoc");
@@ -22,27 +25,22 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDefinition = {
   openapi: "3.0.0",
   info: {
-    title: "Express API for Noteet",
+    title: "Express API for Task_Management",
     version: "1.2.0",
     description:
-      "This is a REST API application made with Express. It is the backend behind noteet, which allows user to create note in an easy way.",
+      "This is a REST API application made with Express. It is the backend behind task management, which allows user to create tasks in an easy and organised way.",
     license: {
       name: "Licensed Under MIT",
       url: "https://spdx.org/licenses/MIT.html",
     },
     contact: {
-      name: "Belkacem Berras",
-      url: "https://www.belkacember.com/",
+      name: "Afoun Yousra",
     },
   },
   servers: [
     {
       url: "http://localhost:8083/v1",
       description: "Development server",
-    },
-    {
-      url: "https://noteet-api.herokuapp.com/v1",
-      description: "Production server",
     },
   ],
 };
@@ -67,11 +65,11 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use("/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/v1/user", user);
+app.use("/v1/tasks", task);
+app.use("/v1/categories", category);
+app.use("/v1/spaces", space);
 
 app.get("/v1/", (req, res) => {
-  // res.send(
-  //   "welcome to the express boilerplate provided by your friendly neighberhood belkacember"
-  // );
   res.sendFile(path.join(__dirname + "/src/static/index.html"));
 });
 

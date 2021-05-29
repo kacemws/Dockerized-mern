@@ -1,15 +1,19 @@
 {
-  "name": "users",
+  "name": "express-boilerplate",
   "version": "1.0.0",
-  "description": "user's microservice for noteet",
+  "description": "Boilerplate for your next express api",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "start:dev": "nodemon index.js"
   },
-  "author": "Belkacem Berras",
-  "license": "MIT",
+  "keywords": [
+    "api",
+    "express"
+  ],
+  "author": "Afoun Yousra Bouchra",
+  "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
@@ -23,5 +27,8 @@
     "nodemon": "^2.0.7",
     "swagger-jsdoc": "^5.0.1",
     "swagger-ui-express": "^4.1.6"
+  },
+  "engines": {
+    "node": "14.15.1"
   }
 }

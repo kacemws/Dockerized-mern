@@ -1,65 +1,43 @@
 version: "3.7"
 
 services:
-  users:
+  server:
     build:
-      context: ./users
+      context: ./server
       dockerfile: Dockerfile
-    image: task-management-users
-    container_name: task-management-users-node
+    image: task-management-server
+    container_name: task-management-node-server
     command: /usr/src/app/node_modules/.bin/nodemon index.js
     volumes:
-      - ./users/:/usr/src/app
+      - ./server/:/usr/src/app
       - /usr/src/app/node_modules
     ports:
       - "8083:8083"
-    env_file: ./users/.env
+    env_file: ./server/.env
     environment:
-      - NODE_ENV=development
-      # - MONGO_CONNECTION_STRING = mongodb+srv://${MONGO_USER}:${MONGO_PSW}@${MONGO_SERVER}/${MONGO_DB}?retryWrites=true&w=majority
-      # - ACCESS_TOKEN_SECRET = ...
-      # - REFRESH_TOKEN_SECRET = ...
+      - MONGO_CONNECTION_STRING=mongodb+srv://bouchra_yousra:psw@server/task-management?retryWrites=true&w=majority
+      - ACCESS_TOKEN_SECRET=key
+      - REFRESH_TOKEN_SECRET=another_key
     networks:
       - app-network
 
-  task-management:
+  client:
     build:
-      context: ./task-management
+      context: ./client
       dockerfile: Dockerfile
-    image: task-management-ressources
-    container_name: task-management-ressources-node
-    command: /usr/src/app/node_modules/.bin/nodemon index.js
-    volumes:
-      - ./task-management/:/usr/src/app
-      - /usr/src/app/node_modules
-    ports:
-      - "8084:8084"
-    env_file: ./task-management/.env
-    environment:
-      - NODE_ENV=development
-      # - MONGO_CONNECTION_STRING = mongodb+srv://${MONGO_USER}:${MONGO_PSW}@${MONGO_SERVER}/${MONGO_DB}?retryWrites=true&w=majority
-      # - ACCESS_TOKEN_SECRET = ...
-      # - REFRESH_TOKEN_SECRET = ...
-    networks:
-      - app-network
-
-  front:
-    build:
-      context: ./front
-      dockerfile: Dockerfile
-    image: task-management-front
-    container_name: task-management-react-front
+    image: task-management-client
+    container_name: task-management-react-client
     command: npm start
     volumes:
-      - ./front/:/usr/app
+      - ./client/:/usr/app
       - /usr/app/node_modules
     depends_on:
-      - users:
-        condition: service_started
-      - task-management:
-        condition: service_started
+      - server
     ports:
       - "3000:3000"
+    env_file: ./client/.env
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8083
     networks:
       - app-network
 
@@ -69,6 +47,6 @@ networks:
 
 volumes:
   data-volume:
-    node_modules:
-      web-root:
-      driver: local
+  node_modules:
+  web-root:
+    driver: local
