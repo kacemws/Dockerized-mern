@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   PageHeader,
@@ -9,12 +9,16 @@ import {
   Table,
   Select,
 } from "antd";
+import { getSpaces } from "../api/spaces.instance";
+import { getCategories, postCategory } from "../api/categories.instance";
 
 const { Title } = Typography;
 
 function Categories() {
   const [modalOpen, setModalOpen] = useState(false);
   const [categoryForm] = Form.useForm();
+
+  const [loading, setLoading] = useState(true);
 
   const tableProps = {
     bordered: true,
@@ -27,6 +31,21 @@ function Categories() {
   };
 
   const [categories, setCategories] = useState([]);
+  const [spaces, setSpaces] = useState([]);
+
+  useEffect(() => {
+    getSpaces().then((spaces) => {
+      const aux = spaces?.space?.map((space) => {
+        return {
+          value: space["_id"],
+          label: space?.title,
+        };
+      });
+      console.log(aux);
+      setSpaces(aux);
+      setLoading(false);
+    });
+  }, []);
 
   return (
     <>
@@ -38,6 +57,8 @@ function Categories() {
             <Button
               key="categories-modal-opener"
               type="primary"
+              disabled={loading}
+              loading={loading}
               onClick={(_) => {
                 setModalOpen(true);
               }}
@@ -46,17 +67,39 @@ function Categories() {
             </Button>,
           ]}
         />
+        <Select
+          style={{
+            minWidth: "8rem",
+            margin: "1rem 0",
+          }}
+          disabled={loading}
+          onChange={async (space) => {
+            setLoading(true);
+            let auxCategories = await getCategories(space);
+
+            auxCategories = auxCategories?.category?.map((category) => {
+              return {
+                key: category["_id"],
+                title: category?.title,
+              };
+            });
+
+            setCategories(auxCategories);
+            setLoading(false);
+          }}
+        >
+          {spaces.map(({ value, label }) => {
+            return <Select.Option value={value}>{label}</Select.Option>;
+          })}
+        </Select>
         <Table
           {...tableProps}
           rowClassName="row-data"
+          loading={loading}
           columns={[
             {
               title: "Name",
-              dataIndex: "name",
-            },
-            {
-              title: "Space",
-              dataIndex: "space",
+              dataIndex: "title",
             },
           ]}
           dataSource={categories}
@@ -73,22 +116,41 @@ function Categories() {
       <Modal
         title="Add category"
         visible={modalOpen}
-        onOk={(_) => {
-          categoryForm
-            .validateFields()
-            .then((values) => {
-              const aux = [...categories];
-              aux.unshift({
-                name: values?.name,
-                space: values?.space,
+        onOk={async (_) => {
+          try {
+            setLoading(true);
+
+            categoryForm
+              .validateFields()
+              .then(async (values) => {
+                const data = {
+                  title: values?.name,
+                  space: values?.space,
+                };
+                await postCategory(data);
+
+                let auxCategories = await getCategories(values?.space);
+
+                auxCategories = auxCategories?.category?.map((category) => {
+                  return {
+                    key: category["_id"],
+                    title: category?.title,
+                  };
+                });
+
+                categoryForm.resetFields();
+                setCategories(auxCategories);
+                setLoading(false);
+                setModalOpen(false);
+              })
+              .catch((info) => {
+                console.log("Validate Failed:", info);
+                throw info;
               });
-              categoryForm.resetFields();
-              setCategories(aux);
-              setModalOpen(false);
-            })
-            .catch((info) => {
-              console.log("Validate Failed:", info);
-            });
+          } catch (err) {
+            setLoading(false);
+            console.error({ err });
+          }
         }}
         onCancel={(_) => {
           categoryForm.resetFields();
@@ -123,9 +185,9 @@ function Categories() {
             ]}
           >
             <Select>
-              <Select.Option value="Space 1">Space 1</Select.Option>
-              <Select.Option value="Space 2">Space 2</Select.Option>
-              <Select.Option value="Space 3">Space 3</Select.Option>
+              {spaces.map(({ value, label }) => {
+                return <Select.Option value={value}>{label}</Select.Option>;
+              })}
             </Select>
           </Form.Item>
         </Form>

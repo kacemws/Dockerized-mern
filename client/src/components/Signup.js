@@ -2,11 +2,14 @@ import { Form, Input, Button, Checkbox } from "antd";
 import { useHistory } from "react-router-dom";
 import { signup } from "../api/connect.instance";
 import Cookies from "js-cookie";
+import { useState } from "react";
 
 function Signin() {
   const history = useHistory();
+  const [loading, setLoading] = useState(false);
   const onFinish = async (values) => {
     try {
+      setLoading(true);
       delete values.confirm;
       const answ = await signup(values);
       console.log(answ.data);
@@ -15,9 +18,9 @@ function Signin() {
         expires: in15minutes,
       });
       localStorage.setItem("refreshToken", answ.data.refreshToken);
-
       history.push("/");
     } catch (err) {
+      setLoading(false);
       console.log({ err });
     }
   };
@@ -109,6 +112,8 @@ function Signin() {
             type="primary"
             htmlType="submit"
             className="login-form-button"
+            disabled={loading}
+            loading={loading}
           >
             Sign up
           </Button>

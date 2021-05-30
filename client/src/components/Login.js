@@ -3,11 +3,14 @@ import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useHistory } from "react-router-dom";
 import { login } from "../api/connect.instance";
 import Cookies from "js-cookie";
+import { useState } from "react";
 
 function Login() {
   const history = useHistory();
+  const [loading, setLoading] = useState(false);
   const onFinish = async (values) => {
     try {
+      setLoading(true);
       console.log("Received values of form: ", values);
       const answ = await login(values);
       console.log(answ);
@@ -17,6 +20,7 @@ function Login() {
       });
       localStorage.setItem("refreshToken", answ.data.refreshToken);
     } catch (err) {
+      setLoading(false);
       console.log(err);
     }
   };
@@ -60,6 +64,8 @@ function Login() {
             type="primary"
             htmlType="submit"
             className="login-form-button"
+            disabled={loading}
+            loading={loading}
           >
             Login
           </Button>

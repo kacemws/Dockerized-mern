@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   PageHeader,
@@ -9,12 +9,15 @@ import {
   Table,
 } from "antd";
 import { SliderPicker } from "react-color";
+import { getSpaces, postSpace } from "../api/spaces.instance";
 const { Title } = Typography;
 
 function Spaces() {
   const [modalOpen, setModalOpen] = useState(false);
   const [pickedColor, setPickedColor] = useState("#fff");
   const [spaceForm] = Form.useForm();
+
+  const [loading, setLoading] = useState(true);
 
   const tableProps = {
     bordered: true,
@@ -27,6 +30,21 @@ function Spaces() {
   };
 
   const [spaces, setSpaces] = useState([]);
+
+  useEffect(() => {
+    getSpaces().then((answer) => {
+      setSpaces([
+        ...answer?.space.map(({ id, title, color }) => {
+          return {
+            key: id,
+            title,
+            color,
+          };
+        }),
+      ]);
+      setLoading(false);
+    });
+  }, []);
 
   return (
     <>
@@ -41,6 +59,8 @@ function Spaces() {
               onClick={(_) => {
                 setModalOpen(true);
               }}
+              disabled={loading}
+              loading={loading}
             >
               Add space
             </Button>,
@@ -49,11 +69,12 @@ function Spaces() {
 
         <Table
           {...tableProps}
+          loading={loading}
           rowClassName="row-data"
           columns={[
             {
               title: "Name",
-              dataIndex: "name",
+              dataIndex: "title",
             },
             {
               title: "Color (HEX)",
@@ -81,16 +102,34 @@ function Spaces() {
         onOk={(_) => {
           spaceForm
             .validateFields()
-            .then((values) => {
-              const aux = [...spaces];
-              aux.unshift({
-                name: values?.name,
-                color: pickedColor,
-              });
-              spaceForm.resetFields();
-              setPickedColor("#fff");
-              setSpaces(aux);
-              setModalOpen(false);
+            .then(async (values) => {
+              try {
+                setLoading(true);
+                const data = {
+                  title: values?.title,
+                  color: pickedColor?.hex,
+                };
+                await postSpace(data);
+
+                let auxSpaces = await getSpaces();
+
+                auxSpaces = auxSpaces?.space?.map(({ id, title, color }) => {
+                  return {
+                    key: id,
+                    title,
+                    color,
+                  };
+                });
+
+                spaceForm.resetFields();
+                setPickedColor("#fff");
+                setSpaces(auxSpaces);
+                setLoading(false);
+                setModalOpen(false);
+              } catch (err) {
+                setLoading(false);
+                console.error({ err });
+              }
             })
             .catch((info) => {
               console.log("Validate Failed:", info);
@@ -105,7 +144,7 @@ function Spaces() {
         <Form form={spaceForm} wrapperCol={{ span: 16 }} name="add-space-form">
           <Form.Item
             label="Name"
-            name="name"
+            name="title"
             rules={[
               {
                 required: true,
