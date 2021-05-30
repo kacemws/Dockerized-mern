@@ -1,52 +1,32 @@
-version: "3.7"
+version: "3"
 
 services:
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    image: task-management-server
     container_name: task-management-node-server
     command: /usr/src/app/node_modules/.bin/nodemon index.js
     volumes:
-      - ./server/:/usr/src/app
-      - /usr/src/app/node_modules
+      - "./server:/server"
     ports:
       - "8083:8083"
-    env_file: ./server/.env
     environment:
-      - MONGO_CONNECTION_STRING=mongodb+srv://bouchra_yousra:psw@server/task-management?retryWrites=true&w=majority
+      - MONGO_CONNECTION_STRING=mongodb+srv://bouchra-yousra:psw@server/task-management?retryWrites=true&w=majority
       - ACCESS_TOKEN_SECRET=key
       - REFRESH_TOKEN_SECRET=another_key
-    networks:
-      - app-network
 
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
-    image: task-management-client
     container_name: task-management-react-client
     command: npm start
     volumes:
-      - ./client/:/usr/app
-      - /usr/app/node_modules
+      - "./client:/client"
     depends_on:
       - server
     ports:
       - "3000:3000"
-    env_file: ./client/.env
     environment:
       - REACT_APP_API_BASE_URL=http://localhost:8083
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
-
-volumes:
-  data-volume:
-  node_modules:
-  web-root:
-    driver: local

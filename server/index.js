@@ -18,6 +18,10 @@ const task = require("./src/v1/routes/task");
 const category = require("./src/v1/routes/category");
 const space = require("./src/v1/routes/space");
 
+const taskV2 = require("./src/v2/routes/task");
+const categoryV2 = require("./src/v2/routes/category");
+const spaceV2 = require("./src/v2/routes/space");
+
 //Swagger
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
@@ -65,9 +69,14 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use("/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/v1/user", user);
+//V1
 app.use("/v1/tasks", task);
 app.use("/v1/categories", category);
 app.use("/v1/spaces", space);
+//V2
+app.use("/v2/tasks", taskV2);
+app.use("/v2/categories", categoryV2);
+app.use("/v2/spaces", spaceV2);
 
 app.get("/v1/", (req, res) => {
   res.sendFile(path.join(__dirname + "/src/static/index.html"));

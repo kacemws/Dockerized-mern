@@ -6,7 +6,6 @@ const auth = require("../middleware/auth");
 
 //utils
 const spaceModule = require("../logic/space");
-const categoryModule = require("../logic/category");
 
 router.get("/", auth, async (req, res) => {
   try {
@@ -23,43 +22,6 @@ router.get("/", auth, async (req, res) => {
     // Send 200 - spaces
     res.status(200).json({
       space,
-    });
-  } catch (err) {
-    console.error(err);
-    if (err.statusCode) {
-      res.status(err.statusCode).json({
-        message: err.body,
-      });
-    }
-  }
-});
-
-router.get("/:id", auth, async (req, res) => {
-  try {
-    const owner = req?.user?.id;
-    const { id: space } = req?.params;
-
-    const { error } = verifyId({ id: space });
-    if (error) {
-      throw {
-        statusCode: 400,
-        body: error.details[0].message,
-      };
-    }
-    const Space = await spaceModule.find(space, owner);
-
-    if (!Space) {
-      throw {
-        statusCode: 400,
-        body: "Space not found",
-      };
-    }
-
-    let categories = (await categoryModule.get(space, owner)) ?? [];
-
-    res.status(200).json({
-      ...Space["_doc"],
-      categories,
     });
   } catch (err) {
     console.error(err);
@@ -112,7 +74,7 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
-router.put("/:id", auth, async (req, res) => {
+router.put("/", auth, async (req, res) => {
   try {
     if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
       throw {
@@ -122,9 +84,8 @@ router.put("/:id", auth, async (req, res) => {
     }
 
     const owner = req?.user?.id;
-    const { id } = req?.params;
 
-    const { error } = verifyExistingSpace({ ...req.body, id });
+    const { error } = verifyExistingSpace(req.body);
     if (error) {
       throw {
         statusCode: 400,
@@ -132,7 +93,7 @@ router.put("/:id", auth, async (req, res) => {
       };
     }
 
-    const { title, color } = req.body;
+    const { id, title, color } = req.body;
 
     const Space = await spaceModule.find(id, owner);
 
@@ -162,9 +123,16 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-router.delete(":id/", auth, async (req, res) => {
+router.delete("/", auth, async (req, res) => {
   try {
-    const { id } = req?.params;
+    if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
+      throw {
+        statusCode: 400,
+        body: "Empty request!",
+      };
+    }
+
+    const { id } = req.body;
     const owner = req?.user?.id;
     const { error } = verifyId({
       id,
@@ -190,33 +158,6 @@ router.delete(":id/", auth, async (req, res) => {
     res.status(200).json({
       message: "deleted successfuly",
       id,
-    });
-  } catch (err) {
-    console.error(err);
-    if (err.statusCode) {
-      res.status(err.statusCode).json({
-        message: err.body,
-      });
-    }
-  }
-});
-
-router.get("/:id/categories", auth, async (req, res) => {
-  try {
-    const owner = req.user?.id;
-    const { id: space } = req?.params;
-
-    let category = await categoryModule.get(space, owner);
-
-    if (category?.length == 0) {
-      throw {
-        statusCode: 204,
-        body: "No category",
-      };
-    }
-    // Send 200 - categorys
-    res.status(200).json({
-      category,
     });
   } catch (err) {
     console.error(err);
